@@ -2,20 +2,12 @@
 
 ## نصب
 ```bash
-# 1) نصب Ollama از سایت رسمی و بررسی نسخه
-ollama --version
 
-# 2) دریافت مدل ارزیابی (نام دقیق مدل را مدرس اعلام می‌کند؛ پیش‌فرض: qwen3:8b)
-ollama pull qwen3:8b
-
-# 3) نصب وابستگی‌های Python
-pip install -r requirements.txt
 ```
 پس از نصب وابستگی‌ها و pull مدل، برنامه بدون اینترنت اجرا می‌شود.
 
 ## اجرا
 ```bash
-python main.py --input input.json --output output.json
 ```
 ورودی: `{"id": "test_001", "problem": "..."}` — خروجی: `{"id": "test_001", "answer": "FINAL_ANSWER"}`
 
