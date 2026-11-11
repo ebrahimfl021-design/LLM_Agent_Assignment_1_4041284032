@@ -1,9 +1,3 @@
-"""Entry point:  python main.py --input input.json --output output.json
-
-Input : {"id": "...", "problem": "..."}  or a list of such objects.
-Output: {"id": "...", "answer": "..."}   or a list in the same order.
-A valid JSON file is written in every situation (bad input, missing model, crash).
-"""
 import argparse
 import json
 import logging
@@ -27,7 +21,6 @@ def _setup_logging(verbose):
 
 
 def _validate_item(item):
-    """(id, problem_text, error) for one input record."""
     if not isinstance(item, dict):
         return None, "", f"record is {type(item).__name__}, expected an object"
     pid = item.get("id")
@@ -54,7 +47,7 @@ def _solve_item(agent, item):
     except Exception:
         log.exception("solve failed id=%r", pid)
         answer = ""
-    answer = " ".join(str(answer if answer is not None else "").split())  # one clean line
+    answer = " ".join(str(answer if answer is not None else "").split())  
     return {"id": pid, "answer": answer}
 
 
@@ -72,7 +65,7 @@ def _write(path, obj):
             os.unlink(tmp)
         except OSError:
             pass
-        with open(path, "w", encoding="utf-8") as fh:  # last resort, still valid JSON
+        with open(path, "w", encoding="utf-8") as fh: 
             json.dump(obj, fh, ensure_ascii=False, indent=2)
 
 
@@ -108,7 +101,7 @@ def main():
         agent = _Dead()
 
     if isinstance(data, list):
-        # placeholders first, then fill in one by one: an interrupted run still leaves valid JSON
+
         result = [{"id": it.get("id") if isinstance(it, dict) else None, "answer": ""} for it in data]
         _write(args.output, result)
         for i, it in enumerate(data):
