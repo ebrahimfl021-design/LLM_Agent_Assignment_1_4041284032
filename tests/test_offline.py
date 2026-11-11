@@ -1,9 +1,3 @@
-"""Offline tests (no Ollama needed): python -m unittest discover -s tests -v
-
-They check the deterministic parts (format detection, normalisation, task routing,
-SOLUTIONS parsing) and the whole pipeline with a scripted fake model. They do not
-measure the accuracy of the real model.
-"""
 import json
 import os
 import sys
@@ -12,11 +6,11 @@ import unittest
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from reasoning_agent import llm as llm_mod                      # noqa: E402
-from reasoning_agent import Agent                                # noqa: E402
-from reasoning_agent.answer_format import build_spec, clean_answer, detect_format  # noqa: E402
-from reasoning_agent.sandbox import parse_solutions             # noqa: E402
-from reasoning_agent.task_types import classify, days_to_english, glossary  # noqa: E402
+from reasoning_agent import llm as llm_mod                      
+from reasoning_agent import Agent                               
+from reasoning_agent.answer_format import build_spec, clean_answer, detect_format  
+from reasoning_agent.sandbox import parse_solutions           
+from reasoning_agent.task_types import classify, days_to_english, glossary  
 
 with open(os.path.join(ROOT, "examples", "input.json"), encoding="utf-8") as fh:
     PUBLIC = {it["id"]: it["problem"] for it in json.load(fh)}
@@ -89,7 +83,7 @@ class RouterTests(unittest.TestCase):
         self.assertEqual(days_to_english("شنبه"), "Saturday")
 
 
-# ------------------------------------------------------------- fake model
+
 class FakeOllama:
     """Replaces the `ollama` package: answers by the role found in the system prompt."""
 
@@ -97,7 +91,7 @@ class FakeOllama:
         self.script = script
         self.calls = []
 
-    def Client(self, timeout=None):  # noqa: N802 (mimics ollama.Client)
+    def Client(self, timeout=None): 
         return self
 
     def chat(self, model=None, messages=None, options=None, think=None, format=None):
@@ -139,7 +133,7 @@ class PipelineTests(unittest.TestCase):
                                    "english": "Nima, Sara and Reza have 72 tokens in total ..."}),
             "code": program(brute, "sols[0]"), "cot": "ANSWER: <Nima=30, Sara=27, Reza=15>"})
         self.assertEqual(ans, "<Nima=30, Sara=27, Reza=15>")
-        self.assertEqual(calls, ["analyst", "code", "code"])  # two programs agree -> stop
+        self.assertEqual(calls, ["analyst", "code", "code"]) 
 
     def test_ambiguous_enumeration_goes_to_disambiguator(self):
         brute = ("[f'{a}{b}{a-b}' for a in range(1,5) for b in range(1,5) "
@@ -150,13 +144,12 @@ class PipelineTests(unittest.TestCase):
             "cot": "ANSWER: 413"})
         self.assertEqual(agent.ambig[0], ["413", "431"])
         self.assertEqual(calls, ["analyst", "code", "code", "disambig"])
-        self.assertEqual(ans, "431")  # whatever the disambiguator picks, as long as it is allowed
-
+        self.assertEqual(ans, "431") 
     def test_choice_with_disagreement_uses_judge(self):
         replies = iter(["ANSWER: Ali=Truth, Bita=Lie", "ANSWER: Ali=Lie, Bita=Truth"] * 5)
         ans, calls, _ = self.run_agent("p8_liar", {
             "analyst": "not json at all",
-            "code": "```python\nprint(1/0)\n```",            # crashes -> repair -> crashes
+            "code": "```python\nprint(1/0)\n```",           
             "cot": lambda _u: next(replies), "judge": "checked\nANSWER: Ali=Lie, Bita=Truth"})
         self.assertEqual(ans, "Ali=Lie, Bita=Truth")
         self.assertIn("judge", calls)
